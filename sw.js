@@ -1,0 +1,6 @@
+const VERSION='advent-2026-v4';
+const SHELL=['./','./index.html','./style.css','./app.js','./language.js','./speech.js','./t2s.json','./days.json','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./fonts/ming.woff2','./fonts/ming-sc.woff2','./FONT-LICENSE.txt'];
+self.addEventListener('install',event=>event.waitUntil(caches.open(VERSION).then(cache=>cache.addAll(SHELL))));
+self.addEventListener('activate',event=>event.waitUntil((async()=>{await Promise.all((await caches.keys()).filter(k=>k.startsWith('advent-2026-')&&k!==VERSION).map(k=>caches.delete(k)));await self.clients.claim();})()));
+self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});
+self.addEventListener('fetch',event=>{const url=new URL(event.request.url);if(event.request.method!=='GET'||url.origin!==self.location.origin||!url.href.startsWith(self.registration.scope))return;if(event.request.mode==='navigate'){event.respondWith((async()=>{try{const response=await fetch(event.request);if(response.ok)return response;}catch{}return (await caches.open(VERSION)).match('./index.html');})());return;}event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request)));});
